@@ -360,7 +360,8 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        params = [block.params() for block in self.blocks]
+        for block in self.blocks:
+            params += block.params()
         # ========================
 
         return params
