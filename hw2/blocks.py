@@ -335,8 +335,9 @@ class Sequential(Block):
         # as the input of the next.
         # ====== YOUR CODE: ======
         out = x
-        for block in self.blocks:
+        for block in self.blocks[:-1]:
             out = block(out)
+        out = self.blocks[-1](out, **kw)
         # ========================
 
         return out
