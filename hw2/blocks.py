@@ -148,7 +148,7 @@ class ReLU(Block):
 
         # TODO: Implement the ReLU operation.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = torch.max(x, torch.tensor(0.0))
         # ========================
 
         self.grad_cache['x'] = x
@@ -163,7 +163,8 @@ class ReLU(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dx = torch.where(x > 0, torch.ones(1), torch.zeros(1))
+        dx = torch.mul(dx, dout)
         # ========================
 
         return dx
@@ -193,7 +194,8 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        self.grad_cache['x'] = x
+        out = torch.pow(1+torch.exp(-x), -1)
         # ========================
 
         return out
@@ -206,7 +208,9 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        x = self.grad_cache['x']
+        dx = torch.pow(1 + torch.exp(-x), -2) * torch.exp(-x)
+        dx = torch.mul(dx, dout)
         # ========================
 
         return dx
@@ -250,7 +254,7 @@ class CrossEntropyLoss(Block):
         # Tip: to get a different column from each row of a matrix tensor m,
         # you can index it with m[range(num_rows), list_of_cols].
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        loss = torch.mean(torch.log(torch.sum(torch.exp(x), dim=(1,))) - x[range(N), y])
         # ========================
 
         self.grad_cache['x'] = x
@@ -269,7 +273,10 @@ class CrossEntropyLoss(Block):
 
         # TODO: Calculate the gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        dx = torch.exp(x) * (torch.pow(torch.sum(torch.exp(x), dim=(1,)), -1)).reshape(-1, 1)
+        dx[range(N), y] -= 1
+        dx /= N
+        dx = torch.mul(dx, dout)
         # ========================
 
         return dx
@@ -327,7 +334,9 @@ class Sequential(Block):
         # TODO: Implement the forward pass by passing each block's output
         # as the input of the next.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        out = x
+        for block in self.blocks:
+            out = block(out)
         # ========================
 
         return out
@@ -339,7 +348,9 @@ class Sequential(Block):
         # Each block's input gradient should be the previous block's output
         # gradient. Behold the backpropagation algorithm in action!
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        din = dout
+        for block in reversed(self.blocks):
+            din = block.backward(din)
         # ========================
 
         return din
@@ -349,7 +360,7 @@ class Sequential(Block):
 
         # TODO: Return the parameter tuples from all blocks.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        params = [block.params() for block in self.blocks]
         # ========================
 
         return params
@@ -369,4 +380,3 @@ class Sequential(Block):
 
     def __getitem__(self, item):
         return self.blocks[item]
-
