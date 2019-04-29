@@ -72,7 +72,12 @@ class Trainer(abc.ABC):
             # - Optional: Implement early stopping. This is a very useful and
             #   simple regularization technique that is highly recommended.
             # ====== YOUR CODE: ======
-            raise NotImplementedError()
+            train_res = self.train_epoch(dl_train)
+            test_res = self.test_epoch(dl_test)
+            train_loss.append(sum(train_res[0])/len(train_res[0]))
+            train_acc.append(train_res[1])
+            test_loss.append(sum(test_res[0])/len(test_res[0]))
+            test_acc.append(test_res[1])
             # ========================
 
         return FitResult(actual_num_epochs,
@@ -188,7 +193,12 @@ class BlocksTrainer(Trainer):
         # - Optimize params
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        logits = self.model(X)
+        loss = self.loss_fn(logits, y)
+        self.optimizer.zero_grad()
+        self.model.backward(self.loss_fn.backward())
+        self.optimizer.step()
+        num_correct = torch.sum(torch.argmax(logits, dim=1) == y)
         # ========================
 
         return BatchResult(loss, num_correct)
@@ -200,7 +210,9 @@ class BlocksTrainer(Trainer):
         # - Forward pass
         # - Calculate number of correct predictions
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        logits = self.model(X)
+        loss = self.loss_fn(logits, y)
+        num_correct = torch.sum(torch.argmax(logits, dim=1) == y)
         # ========================
 
         return BatchResult(loss, num_correct)

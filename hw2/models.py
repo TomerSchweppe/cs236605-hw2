@@ -36,7 +36,10 @@ class MLP(Block):
         hidden_features = [in_features] + hidden_features
         for idx in range(len(hidden_features)-1):
             blocks.append(Linear(hidden_features[idx], hidden_features[idx+1]))
-            blocks.append(ReLU())
+            if activation == 'relu':
+                blocks.append(ReLU())
+            else:
+                blocks.append(Sigmoid())
         blocks.append(Linear(hidden_features[-1], num_classes))
         # ========================
 
