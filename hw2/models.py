@@ -17,6 +17,7 @@ class MLP(Block):
     If dropout is used, a dropout layer is added after every activation
     function.
     """
+
     def __init__(self, in_features, num_classes, hidden_features=(),
                  activation='relu', dropout=0, **kw):
         super().__init__()
@@ -34,8 +35,8 @@ class MLP(Block):
         # TODO: Build the MLP architecture as described.
         # ====== YOUR CODE: ======
         hidden_features = [in_features] + hidden_features
-        for idx in range(len(hidden_features)-1):
-            blocks.append(Linear(hidden_features[idx], hidden_features[idx+1]))
+        for idx in range(len(hidden_features) - 1):
+            blocks.append(Linear(hidden_features[idx], hidden_features[idx + 1]))
             if activation == 'relu':
                 blocks.append(ReLU())
             else:
@@ -69,6 +70,7 @@ class ConvClassifier(nn.Module):
     The architecture is:
     [(Conv -> ReLU)*P -> MaxPool]*(N/P) -> (Linear -> ReLU)*M -> Linear
     """
+
     def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims):
         """
         :param in_size: Size of input images, e.g. (C,H,W).
@@ -98,8 +100,15 @@ class ConvClassifier(nn.Module):
         # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
         # Pooling to reduce dimensions.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
-
+        channels = [in_channels] + self.filters
+        ck_W, ck_H = 3, 3
+        pk_W, pk_H = 2, 2
+        for l in range(len(self.filters) // self.pool_every):
+            for p in range(self.pool_every):
+                i = l + p
+                layers.append(nn.Conv2d(channels[i], channels[i + 1], (ck_H, ck_W), padding=1))
+                layers.append(nn.ReLU())
+            layers.append(nn.MaxPool2d((pk_H, pk_W)))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -113,7 +122,12 @@ class ConvClassifier(nn.Module):
         # You'll need to calculate the number of features first.
         # The last Linear layer should have an output dimension of out_classes.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        features_num = (self.filters[-1] * in_h * in_w) // ((2 * 2)**(len(self.filters) // self.pool_every))
+        hidden_dims = [features_num] + self.hidden_dims
+        for i in range(len(hidden_dims) - 1):
+            layers.append(nn.Linear(hidden_dims[i], hidden_dims[i + 1]))
+            layers.append(nn.ReLU())
+        layers.append(nn.Linear(hidden_dims[-1], self.out_classes))
         # ========================
         seq = nn.Sequential(*layers)
         return seq
@@ -123,7 +137,9 @@ class ConvClassifier(nn.Module):
         # Extract features from the input, run the classifier on them and
         # return class scores.
         # ====== YOUR CODE: ======
-        raise NotImplementedError()
+        in_channels, in_h, in_w, = tuple(self.in_size)
+        features_num = (self.filters[-1] * in_h * in_w) // ((2 * 2)**(len(self.filters) // self.pool_every))
+        out = self.classifier(self.feature_extractor(x).view(-1, features_num))
         # ========================
         return out
 
