@@ -74,10 +74,10 @@ class Trainer(abc.ABC):
             # ====== YOUR CODE: ======
             train_res = self.train_epoch(dl_train)
             test_res = self.test_epoch(dl_test)
-            train_loss.append(sum(train_res[0])/len(train_res[0]))
-            train_acc.append(train_res[1])
-            test_loss.append(sum(test_res[0])/len(test_res[0]))
-            test_acc.append(test_res[1])
+            train_loss.append((sum(train_res[0])/len(train_res[0])).item())
+            train_acc.append(train_res[1].item())
+            test_loss.append((sum(test_res[0])/len(test_res[0])).item())
+            test_acc.append(test_res[1].item())
             # ========================
 
         return FitResult(actual_num_epochs,

@@ -85,8 +85,8 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
     # trainer
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device)
+    # fitting!
     fit_res = trainer.fit(dl_train, dl_test, epochs, checkpoints, early_stopping)
-
     # ========================
 
     save_experiment(run_name, out_dir, cfg, fit_res)

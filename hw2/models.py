@@ -105,7 +105,7 @@ class ConvClassifier(nn.Module):
         pk_W, pk_H = 2, 2
         for l in range(len(self.filters) // self.pool_every):
             for p in range(self.pool_every):
-                i = l + p
+                i = l * self.pool_every + p
                 layers.append(nn.Conv2d(channels[i], channels[i + 1], (ck_H, ck_W), padding=1))
                 layers.append(nn.ReLU())
             layers.append(nn.MaxPool2d((pk_H, pk_W)))
@@ -139,7 +139,9 @@ class ConvClassifier(nn.Module):
         # ====== YOUR CODE: ======
         in_channels, in_h, in_w, = tuple(self.in_size)
         features_num = (self.filters[-1] * in_h * in_w) // ((2 * 2)**(len(self.filters) // self.pool_every))
-        out = self.classifier(self.feature_extractor(x).view(-1, features_num))
+        fe_out = self.feature_extractor(x)
+        flatten = fe_out.view(-1, features_num)
+        out = self.classifier(flatten)
         # ========================
         return out
 
