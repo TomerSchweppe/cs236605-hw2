@@ -303,7 +303,7 @@ class Dropout(Block):
         out = x
         if self.training_mode:
             self.grad_cache['mask'].append((torch.rand_like(x) >= self.p).float())
-            out.mul_(self.grad_cache['mask'])
+            out.mul_(self.grad_cache['mask'][-1])
         else:
             out.mul_(1 - self.p)
         # ========================
