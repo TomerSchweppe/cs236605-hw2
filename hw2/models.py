@@ -148,7 +148,7 @@ class ConvClassifier(nn.Module):
 
 
 class YourCodeNet(ConvClassifier):
-    def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims, dropout=0.4):
+    def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims, dropout=0.2):
         self.dropout = dropout
         super().__init__(in_size, out_classes, filters, pool_every, hidden_dims)
 

@@ -56,21 +56,13 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     #  for you automatically.
     fit_res = None
     # ====== YOUR CODE: ======
-    # # split test dataset to validation and test
-    # indices = list(range(len(ds_test)))
-    # random.shuffle(indices)
-    # ds_valid = ds_test[:len(indices) // 2]
-    # ds_small_test = ds_test[len(indices) // 2:]
-
     # create loaders
-    train_samples_num = 12_000
+    train_samples_num = 20_000
     test_samples_num = 3_000
 
     dl_train = torch.utils.data.DataLoader(Subset(ds_train, list(range(train_samples_num))), bs_train,
                                            shuffle=True)
     dl_test = torch.utils.data.DataLoader(Subset(ds_test, list(range(test_samples_num))), bs_test, shuffle=False)
-    # dl_valid = torch.utils.data.DataLoader(ds_valid, bs_test, shuffle=False)
-    # dl_test = torch.utils.data.DataLoader(ds_small_test, bs_test, shuffle=False)
 
     filters = []
     # create model
@@ -82,7 +74,7 @@ def run_experiment(run_name, out_dir='./results', seed=None,
     # loss function
     loss_fn = torch.nn.CrossEntropyLoss()
     # optimizer
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=reg)
     # trainer
     trainer = training.TorchTrainer(model, loss_fn, optimizer, device)
     # fitting!
@@ -147,7 +139,7 @@ def parse_cli():
                              'accuracy improves', default=None)
     sp_exp.add_argument('--lr', type=float,
                         help='Learning rate', default=1e-3)
-    sp_exp.add_argument('--reg', type=int,
+    sp_exp.add_argument('--reg', type=float,
                         help='L2 regularization', default=1e-3)
 
     # # Model
