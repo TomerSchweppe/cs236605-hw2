@@ -1,5 +1,6 @@
 import abc
 import torch
+import collections
 
 
 class Block(abc.ABC):
@@ -9,7 +10,7 @@ class Block(abc.ABC):
     """
     def __init__(self):
         # Store intermediate values needed to compute gradients in this hash
-        self.grad_cache = {}
+        self.grad_cache = collections.defaultdict(list)
         self.training_mode = True
 
     def __call__(self, *args, **kwargs):
@@ -103,8 +104,7 @@ class Linear(Block):
         # ====== YOUR CODE: ======
         out = torch.mm(x, self.w.t()) + self.b
         # ========================
-
-        self.grad_cache['x'] = x
+        self.grad_cache['x'].append(x)
         return out
 
     def backward(self, dout):
@@ -112,7 +112,7 @@ class Linear(Block):
         :param dout: Gradient with respect to block output, shape (N, Dout).
         :return: Gradient with respect to block input, shape (N, Din)
         """
-        x = self.grad_cache['x']
+        x = self.grad_cache['x'].pop()
 
         # TODO: Compute
         #   - dx, the gradient of the loss with respect to x
@@ -151,7 +151,7 @@ class ReLU(Block):
         out = torch.max(x, torch.tensor(0.0))
         # ========================
 
-        self.grad_cache['x'] = x
+        self.grad_cache['x'].append(x)
         return out
 
     def backward(self, dout):
@@ -159,7 +159,7 @@ class ReLU(Block):
         :param dout: Gradient with respect to block output, shape (N, *).
         :return: Gradient with respect to block input, shape (N, *)
         """
-        x = self.grad_cache['x']
+        x = self.grad_cache['x'].pop()
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
@@ -194,7 +194,7 @@ class Sigmoid(Block):
         # TODO: Implement the Sigmoid function. Save whatever you need into
         # grad_cache.
         # ====== YOUR CODE: ======
-        self.grad_cache['x'] = x
+        self.grad_cache['x'].append(x)
         out = torch.pow(1+torch.exp(-x), -1)
         # ========================
 
@@ -208,7 +208,7 @@ class Sigmoid(Block):
 
         # TODO: Implement gradient w.r.t. the input x
         # ====== YOUR CODE: ======
-        x = self.grad_cache['x']
+        x = self.grad_cache['x'].pop()
         dx = torch.pow(1 + torch.exp(-x), -2) * torch.exp(-x)
         dx = torch.mul(dx, dout)
         # ========================
@@ -302,7 +302,7 @@ class Dropout(Block):
         # ====== YOUR CODE: ======
         out = x
         if self.training_mode:
-            self.grad_cache['mask'] = (torch.rand_like(x) >= self.p).float()
+            self.grad_cache['mask'].append((torch.rand_like(x) >= self.p).float())
             out.mul_(self.grad_cache['mask'])
         else:
             out.mul_(1 - self.p)
@@ -315,7 +315,7 @@ class Dropout(Block):
         # ====== YOUR CODE: ======
         dx = dout
         if self.training_mode:
-            dx.mul_(self.grad_cache['mask'])
+            dx.mul_(self.grad_cache['mask'].pop())
         else:
             dx.mul_(1 - self.p)
         # ========================
