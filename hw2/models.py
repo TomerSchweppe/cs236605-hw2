@@ -147,14 +147,32 @@ class ConvClassifier(nn.Module):
 
 
 class YourCodeNet(ConvClassifier):
-    def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims):
+    def __init__(self, in_size, out_classes, filters, pool_every, hidden_dims, dropout=0.4):
+        self.dropout = dropout
         super().__init__(in_size, out_classes, filters, pool_every, hidden_dims)
 
-    # TODO: Change whatever you want about the ConvClassifier to try to
-    # improve it's results on CIFAR-10.
-    # For example, add batchnorm, dropout, skip connections, change conv
-    # filter sizes etc.
-    # ====== YOUR CODE: ======
-        raise NotImplementedError()
-    # ========================
+    def _make_feature_extractor(self):
+        in_channels, in_h, in_w, = tuple(self.in_size)
+
+        layers = []
+        # TODO: Create the feature extractor part of the model:
+        # [(Conv -> ReLU)*P -> MaxPool]*(N/P)
+        # Use only dimension-preserving 3x3 convolutions. Apply 2x2 Max
+        # Pooling to reduce dimensions.
+        # ====== YOUR CODE: ======
+        channels = [in_channels] + self.filters
+        ck_W, ck_H = 3, 3
+        pk_W, pk_H = 2, 2
+        for l in range(len(self.filters) // self.pool_every):
+            for p in range(self.pool_every):
+                i = l * self.pool_every + p
+                layers.append(nn.Conv2d(channels[i], channels[i + 1], (ck_H, ck_W), padding=1))
+                nn.init.xavier_normal_(layers[-1].weight)
+                layers.append(nn.BatchNorm2d(channels[i + 1]))
+                layers.append(nn.ReLU())
+                layers.append(nn.Dropout(p=self.dropout))
+            layers.append(nn.MaxPool2d((pk_H, pk_W)))
+        # ========================
+        seq = nn.Sequential(*layers)
+        return seq
 
